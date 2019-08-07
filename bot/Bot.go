@@ -52,7 +52,8 @@ func main() {
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
-	lastCity := ""
+	var lastCityM map[int]string
+	lastCityM = make(map[int]string)
 	for update := range updates {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message == nil { // ignore any non-Message Updates
@@ -61,7 +62,7 @@ func main() {
 		current := update.Message.Text
 		log.Printf("[%s]: %s", update.Message.From.UserName, strings.ToLower(current))
 		var toSend string
-		toSend, cities, lastCity = chooseWord(current, cities, lastCity)
+		toSend, cities, lastCityM[update.Message.From.ID] = chooseWord(current, cities, lastCityM[update.Message.From.ID])
 
 		msg.Text = toSend
 		if update.Message.Text == "English" {
@@ -77,7 +78,7 @@ func main() {
 func chooseWord(current string, cities []string, lastSent string) (string, []string, string) {
 	result := " "
 	if lastSent != "" && []rune(lastSent)[len([]rune(lastSent))-1] != []rune(strings.ToLower(current))[0] {
-		result = "Ваше слово не подходит"
+		result = "Ваше слово не подходит. Последний город - " + lastSent
 		return result, cities, lastSent
 	}
 	f := stringSlice(cities).contains(current)
