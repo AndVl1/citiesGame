@@ -36,8 +36,6 @@ func main() {
 		log.Panic(err)
 	}
 	csvReader := csv.NewReader(bufio.NewReader(csvFile))
-	csvReader.Comma = ';'
-	csvReader.LazyQuotes = true
 
 	var cities []string
 	for {
@@ -54,21 +52,16 @@ func main() {
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
-	kb := 0
+	lastCity := ""
 	for update := range updates {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-		if kb == 0 {
-			msg.ReplyMarkup = keyboard
-			kb++
-			_, _ = bot.Send(msg)
-		}
 		if update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
 		current := update.Message.Text
 		log.Printf("[%s]: %s", update.Message.From.UserName, strings.ToLower(current))
 		var toSend string
-		toSend, cities = chooseWord(current, cities)
+		toSend, cities, lastCity = chooseWord(current, cities, lastCity)
 
 		msg.Text = toSend
 		if update.Message.Text == "English" {
@@ -76,30 +69,36 @@ func main() {
 		} else if update.Message.Text == "Russian" {
 			msg.Text = "Выбран русский язык"
 		}
+		msg.ReplyToMessageID = update.Message.MessageID
 		_, _ = bot.Send(msg)
 	}
 }
 
-func chooseWord(current string, cities []string) (string, []string) {
+func chooseWord(current string, cities []string, lastSent string) (string, []string, string) {
 	result := " "
+	if lastSent != "" && []rune(lastSent)[len([]rune(lastSent))-1] != []rune(strings.ToLower(current))[0] {
+		result = "Ваше слово не подходит"
+		return result, cities, lastSent
+	}
 	f := stringSlice(cities).contains(current)
 	if f > -1 {
 		cities = append(cities[:f], cities[f+1:]...)
 	} else {
-		result = "Название уже было использовано или такого города не существует. Попробуйте еще"
-		return result, cities
+		result = "Название уже было использовано или такого города не существует[вероятно, в нашей бд]. Попробуйте еще"
+		return result, cities, lastSent
 	}
 	for i, city := range cities {
 		if []rune(strings.ToLower(city))[0] == []rune(strings.ToLower(current))[len([]rune(current))-1] {
 			result = city
 			cities = append(cities[:i], cities[i+1:]...)
-			break
+			return result, cities, result
 		}
 	}
 	if result == " " {
 		result = "Это невозможно, но вы выиграли"
+		return result, cities, lastSent
 	}
-	return result, cities
+	return result, cities, lastSent
 }
 
 func (s stringSlice) contains(e string) int {
