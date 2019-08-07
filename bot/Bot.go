@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 )
+
 // todo "ь", словари для разных пользователей
 var keyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
@@ -61,6 +62,7 @@ func main() {
 		if update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
+		uID := update.Message.From.ID
 		//Обработка команд keyboard
 		if update.Message.Text == "English" {
 			msg.Text = "Not ready yet"
@@ -73,22 +75,23 @@ func main() {
 			_, _ = bot.Send(msg)
 			continue
 		} else if update.Message.Text == "End game" {
-			used[update.Message.From.ID] = used[update.Message.From.ID][:0]
+			used[uID] = used[uID][:0]
 			log.Println(used)
-			lastCity[update.Message.From.ID] = ""
+			lastCity[uID] = ""
 			msg.Text = "Игра сброшена \nСпасибо за игру"
 			msg.ReplyToMessageID = update.Message.MessageID
+			userCities[uID] = cities
 			_, _ = bot.Send(msg)
 			continue
 		} else if update.Message.Text == "Start game" {
-			used[update.Message.From.ID] = used[update.Message.From.ID][:0]
-			lastCity[update.Message.From.ID] = ""
+			used[uID] = used[uID][:0]
+			lastCity[uID] = ""
 			msg.Text = "Для начала игры отправьте название города"
 			msg.ReplyToMessageID = update.Message.MessageID
 			_, _ = bot.Send(msg)
-			userCities[update.Message.From.ID] = cities
+			userCities[uID] = cities
 			continue
-		} else if update.Message.Text == "Правила"{
+		} else if update.Message.Text == "Правила" {
 			msg.Text = "Отправьте название города. Бот пришлет вам следующий город, начинающийся с той же буквы. Ответьте ему тем же"
 			_, _ = bot.Send(msg)
 			continue
@@ -102,8 +105,8 @@ func main() {
 		current := update.Message.Text
 		log.Printf("[%s]: %s", update.Message.From.UserName, strings.ToLower(current))
 		var toSend string
-		toSend, cities, lastCity[update.Message.From.ID] = chooseWord(current, cities, lastCity[update.Message.From.ID], used[update.Message.From.ID])
-		used[update.Message.From.ID] = append(used[update.Message.From.ID], lastCity[update.Message.From.ID], current)
+		toSend, cities, lastCity[uID] = chooseWord(current, cities, lastCity[uID], used[uID])
+		used[uID] = append(used[uID], lastCity[uID], current)
 
 		msg.Text = toSend
 		if update.Message.Text == "English" {
@@ -131,10 +134,10 @@ func chooseWord(current string, cities []string, lastSent string, used stringSli
 	f := stringSlice(cities).contains(current)
 	if f > -1 {
 		cities = append(cities[:f], cities[f+1:]...)
-	}else if used.contains(current) != -1 {
+	} else if used.contains(current) != -1 {
 		result = "Этот город уже был сыгран. Попробуйте еще"
 		return result, cities, lastSent
-	}else {
+	} else {
 		result = "Такого города не существует[вероятно, в нашей бд]. Попробуйте еще"
 		return result, cities, lastSent
 	}
