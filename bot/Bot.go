@@ -100,12 +100,16 @@ func main() {
 		} else if update.Message.Text == "/start_game" {
 			msg.ReplyMarkup = keyboard
 			continue
+		} else if update.Message.Text == "/help" {
+			msg.Text = "Начните игру, написав название города. Бот отправит вам город, название которого начинается  на последнюю букву вашего города. Продолжайте игру"
+			_, _ = bot.Send(msg)
+			continue
 		}
 		//до сюда
 		current := update.Message.Text
 		log.Printf("[%s]: %s", update.Message.From.UserName, strings.ToLower(current))
 		var toSend string
-		toSend, cities, lastCity[uID] = chooseWord(current, cities, lastCity[uID], used[uID])
+		toSend, userCities[uID], lastCity[uID] = chooseWord(current, userCities[uID], lastCity[uID], used[uID])
 		used[uID] = append(used[uID], lastCity[uID], current)
 
 		msg.Text = toSend
