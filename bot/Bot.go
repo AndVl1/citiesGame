@@ -9,11 +9,12 @@ import (
 	"os"
 	"strings"
 )
-
+// todo "ь", словари для разных пользователей
 var keyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("Start game"),
 		tgbotapi.NewKeyboardButton("End game"),
+		tgbotapi.NewKeyboardButton("Правила"),
 	),
 	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("Russian"),
@@ -52,6 +53,7 @@ func main() {
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
+	userCities := make(map[int]stringSlice)
 	lastCity := make(map[int]string)
 	used := make(map[int]stringSlice)
 	for update := range updates {
@@ -72,6 +74,7 @@ func main() {
 			continue
 		} else if update.Message.Text == "End game" {
 			used[update.Message.From.ID] = used[update.Message.From.ID][:0]
+			log.Println(used)
 			lastCity[update.Message.From.ID] = ""
 			msg.Text = "Игра сброшена \nСпасибо за игру"
 			msg.ReplyToMessageID = update.Message.MessageID
@@ -83,6 +86,16 @@ func main() {
 			msg.Text = "Для начала игры отправьте название города"
 			msg.ReplyToMessageID = update.Message.MessageID
 			_, _ = bot.Send(msg)
+			userCities[update.Message.From.ID] = cities
+			continue
+		} else if update.Message.Text == "Правила"{
+			msg.Text = "Отправьте название города. Бот пришлет вам следующий город, начинающийся с той же буквы. Ответьте ему тем же"
+			_, _ = bot.Send(msg)
+			continue
+		} else if update.Message.Text == "/start" {
+			continue
+		} else if update.Message.Text == "/start_game" {
+			msg.ReplyMarkup = keyboard
 			continue
 		}
 		//до сюда
@@ -118,7 +131,7 @@ func chooseWord(current string, cities []string, lastSent string, used stringSli
 	f := stringSlice(cities).contains(current)
 	if f > -1 {
 		cities = append(cities[:f], cities[f+1:]...)
-	}else if used.contains(current) == -1 {
+	}else if used.contains(current) != -1 {
 		result = "Этот город уже был сыгран. Попробуйте еще"
 		return result, cities, lastSent
 	}else {
