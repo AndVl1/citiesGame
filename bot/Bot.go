@@ -59,6 +59,33 @@ func main() {
 		if update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
+		//Обработка команд keyboard
+		if update.Message.Text == "English" {
+			msg.Text = "Not ready yet"
+			msg.ReplyToMessageID = update.Message.MessageID
+			_, _ = bot.Send(msg)
+			continue
+		} else if update.Message.Text == "Russian" {
+			msg.Text = "Выбран русский язык"
+			msg.ReplyToMessageID = update.Message.MessageID
+			_, _ = bot.Send(msg)
+			continue
+		} else if update.Message.Text == "End game" {
+			used[update.Message.From.ID] = used[update.Message.From.ID][:0]
+			lastCity[update.Message.From.ID] = ""
+			msg.Text = "Игра сброшена \nСпасибо за игру"
+			msg.ReplyToMessageID = update.Message.MessageID
+			_, _ = bot.Send(msg)
+			continue
+		} else if update.Message.Text == "Start game" {
+			used[update.Message.From.ID] = used[update.Message.From.ID][:0]
+			lastCity[update.Message.From.ID] = ""
+			msg.Text = "Для начала игры отправьте название города"
+			msg.ReplyToMessageID = update.Message.MessageID
+			_, _ = bot.Send(msg)
+			continue
+		}
+		//до сюда
 		current := update.Message.Text
 		log.Printf("[%s]: %s", update.Message.From.UserName, strings.ToLower(current))
 		var toSend string
@@ -68,8 +95,14 @@ func main() {
 		msg.Text = toSend
 		if update.Message.Text == "English" {
 			msg.Text = "Not ready yet"
+			msg.ReplyToMessageID = update.Message.MessageID
+			_, _ = bot.Send(msg)
+			continue
 		} else if update.Message.Text == "Russian" {
 			msg.Text = "Выбран русский язык"
+			msg.ReplyToMessageID = update.Message.MessageID
+			_, _ = bot.Send(msg)
+			continue
 		}
 		msg.ReplyToMessageID = update.Message.MessageID
 		_, _ = bot.Send(msg)
