@@ -18,7 +18,7 @@ var keyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("Russian"),
 		tgbotapi.NewKeyboardButton("English"),
-	), )
+	))
 
 type stringSlice []string
 
@@ -54,8 +54,14 @@ func main() {
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
-
+	kb := 0
 	for update := range updates {
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+		if kb == 0 {
+			msg.ReplyMarkup = keyboard
+			kb++
+			_, _ = bot.Send(msg)
+		}
 		if update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
@@ -64,25 +70,27 @@ func main() {
 		var toSend string
 		toSend, cities = chooseWord(current, cities)
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, toSend)
+		msg.Text = toSend
 		if update.Message.Text == "English" {
 			msg.Text = "Not ready yet"
+		} else if update.Message.Text == "Russian" {
+			msg.Text = "Выбран русский язык"
 		}
 		_, _ = bot.Send(msg)
 	}
 }
 
-func chooseWord(current string, cities []string) (string, []string){
+func chooseWord(current string, cities []string) (string, []string) {
 	result := " "
 	f := stringSlice(cities).contains(current)
 	if f > -1 {
-		cities = append(cities[: f], cities[f + 1:]...)
+		cities = append(cities[:f], cities[f+1:]...)
 	} else {
 		result = "Название уже было использовано или такого города не существует. Попробуйте еще"
 		return result, cities
 	}
-	for i, city := range cities{
-		if []rune(strings.ToLower(city))[0] == []rune(strings.ToLower(current))[len([]rune(current)) - 1] {
+	for i, city := range cities {
+		if []rune(strings.ToLower(city))[0] == []rune(strings.ToLower(current))[len([]rune(current))-1] {
 			result = city
 			cities = append(cities[:i], cities[i+1:]...)
 			break
@@ -96,7 +104,7 @@ func chooseWord(current string, cities []string) (string, []string){
 
 func (s stringSlice) contains(e string) int {
 	for i, a := range s {
-		if a == e {
+		if strings.ToLower(a) == strings.ToLower(e) {
 			return i
 		}
 	}
