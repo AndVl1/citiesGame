@@ -52,8 +52,8 @@ func main() {
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
-	var lastCityM map[int]string
-	lastCityM = make(map[int]string)
+	lastCity := make(map[int]string)
+	used := make(map[int]stringSlice)
 	for update := range updates {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message == nil { // ignore any non-Message Updates
@@ -62,7 +62,8 @@ func main() {
 		current := update.Message.Text
 		log.Printf("[%s]: %s", update.Message.From.UserName, strings.ToLower(current))
 		var toSend string
-		toSend, cities, lastCityM[update.Message.From.ID] = chooseWord(current, cities, lastCityM[update.Message.From.ID])
+		toSend, cities, lastCity[update.Message.From.ID] = chooseWord(current, cities, lastCity[update.Message.From.ID], used[update.Message.From.ID])
+		used[update.Message.From.ID] = append(used[update.Message.From.ID], lastCity[update.Message.From.ID], current)
 
 		msg.Text = toSend
 		if update.Message.Text == "English" {
@@ -75,7 +76,7 @@ func main() {
 	}
 }
 
-func chooseWord(current string, cities []string, lastSent string) (string, []string, string) {
+func chooseWord(current string, cities []string, lastSent string, used stringSlice) (string, []string, string) {
 	result := " "
 	if lastSent != "" && []rune(lastSent)[len([]rune(lastSent))-1] != []rune(strings.ToLower(current))[0] {
 		result = "Ваше слово не подходит. Последний город - " + lastSent
@@ -84,8 +85,11 @@ func chooseWord(current string, cities []string, lastSent string) (string, []str
 	f := stringSlice(cities).contains(current)
 	if f > -1 {
 		cities = append(cities[:f], cities[f+1:]...)
-	} else {
-		result = "Название уже было использовано или такого города не существует[вероятно, в нашей бд]. Попробуйте еще"
+	}else if used.contains(current) == -1 {
+		result = "Этот город уже был сыгран. Попробуйте еще"
+		return result, cities, lastSent
+	}else {
+		result = "Такого города не существует[вероятно, в нашей бд]. Попробуйте еще"
 		return result, cities, lastSent
 	}
 	for i, city := range cities {
