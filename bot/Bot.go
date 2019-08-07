@@ -20,6 +20,8 @@ var keyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButton("English"),
 	), )
 
+type stringSlice []string
+
 func main() {
 	bot, err := tgbotapi.NewBotAPI("945600369:AAHVNGwrXhbT1KIAa6y5LV5zrC1gAiXVgRs") // just test bot api
 	if err != nil {
@@ -28,7 +30,7 @@ func main() {
 	bot.Debug = true
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	csvFile, err := os.Open("bot (may be)/city.csv")
+	csvFile, err := os.Open("bot/city.csv")
 	defer csvFile.Close()
 	if err != nil {
 		log.Panic(err)
@@ -59,27 +61,44 @@ func main() {
 		}
 		current := update.Message.Text
 		log.Printf("[%s]: %s", update.Message.From.UserName, strings.ToLower(current))
-		log.Println(len([]rune(current)), strings.ToLower(current),strings.ToLower(current)[0], strings.ToLower(current)[len(current)-1])
-		toSend := " "
-		i, city := 0, ""
-		for i, city = range cities{
-			//log.Println((city)[0], strings.ToLower(current)[len(current) - 1])
-			if []rune(strings.ToLower(city))[0] == []rune(strings.ToLower(current))[len([]rune(current)) - 1] {
-				toSend = city
-				cities = append(cities[:i], cities[i+1:]...)
-				break
-			}
-		}
-		if toSend == " " {
-			toSend = "Это невозможно, но вы выиграли"
-		}
+		var toSend string
+		toSend, cities = chooseWord(current, cities)
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, toSend)
-
 		if update.Message.Text == "English" {
 			msg.Text = "Not ready yet"
 		}
-
 		_, _ = bot.Send(msg)
 	}
+}
+
+func chooseWord(current string, cities []string) (string, []string){
+	result := " "
+	f := stringSlice(cities).contains(current)
+	if f > -1 {
+		cities = append(cities[: f], cities[f + 1:]...)
+	} else {
+		result = "Название уже было использовано или такого города не существует. Попробуйте еще"
+		return result, cities
+	}
+	for i, city := range cities{
+		if []rune(strings.ToLower(city))[0] == []rune(strings.ToLower(current))[len([]rune(current)) - 1] {
+			result = city
+			cities = append(cities[:i], cities[i+1:]...)
+			break
+		}
+	}
+	if result == " " {
+		result = "Это невозможно, но вы выиграли"
+	}
+	return result, cities
+}
+
+func (s stringSlice) contains(e string) int {
+	for i, a := range s {
+		if a == e {
+			return i
+		}
+	}
+	return -1
 }
