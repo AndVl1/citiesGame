@@ -28,7 +28,7 @@ func main() {
 	bot.Debug = true
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	csvFile, err := os.Open("bot (may be)/city.csv")
+	csvFile, err := os.Open("bot/city.csv")
 	defer csvFile.Close()
 	if err != nil {
 		log.Panic(err)
