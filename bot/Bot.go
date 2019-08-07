@@ -10,12 +10,11 @@ import (
 	"strings"
 )
 
-// todo "ь", словари для разных пользователей
 var keyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("Start game"),
 		tgbotapi.NewKeyboardButton("End game"),
-		tgbotapi.NewKeyboardButton("Правила"),
+		tgbotapi.NewKeyboardButton("Rules"),
 	),
 	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("Russian"),
@@ -91,7 +90,7 @@ func main() {
 			_, _ = bot.Send(msg)
 			userCities[uID] = cities
 			continue
-		} else if update.Message.Text == "Правила" {
+		} else if update.Message.Text == "Rules" {
 			msg.Text = "Отправьте название города. Бот пришлет вам следующий город, начинающийся с той же буквы. Ответьте ему тем же"
 			_, _ = bot.Send(msg)
 			continue
@@ -99,6 +98,8 @@ func main() {
 			continue
 		} else if update.Message.Text == "/start_game" {
 			msg.ReplyMarkup = keyboard
+			msg.Text = "Начните игру, нажав на Start game"
+			_, _ = bot.Send(msg)
 			continue
 		} else if update.Message.Text == "/help" {
 			msg.Text = "Начните игру, написав название города. Бот отправит вам город, название которого начинается  на последнюю букву вашего города. Продолжайте игру"
@@ -106,6 +107,12 @@ func main() {
 			continue
 		}
 		//до сюда
+		if len(userCities[uID]) == 0 {
+			msg.Text = "Вы не начали игру. Нажмите /start_game или \"Start game\""
+			msg.ReplyMarkup = keyboard
+			_, _ = bot.Send(msg)
+			continue
+		}
 		current := update.Message.Text
 		log.Printf("[%s]: %s", update.Message.From.UserName, strings.ToLower(current))
 		var toSend string
@@ -144,6 +151,9 @@ func chooseWord(current string, cities []string, lastSent string, used stringSli
 	} else {
 		result = "Такого города не существует[вероятно, в нашей бд]. Попробуйте еще"
 		return result, cities, lastSent
+	}
+	if []rune(current)[len([]rune(current))-1] == rune('ь'){
+		current = string([]rune(current)[0:len([]rune(current))-1])
 	}
 	for i, city := range cities {
 		if []rune(strings.ToLower(city))[0] == []rune(strings.ToLower(current))[len([]rune(current))-1] {

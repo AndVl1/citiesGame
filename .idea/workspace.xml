@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="bf08654b-7da2-4a93-bc7a-01619a33a628" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/Bot.go" beforeDir="false" afterPath="$PROJECT_DIR$/bot/Bot.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/bot/Bot.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="543">
-              <caret line="108" column="61" lean-forward="true" selection-start-line="108" selection-start-column="61" selection-end-line="108" selection-end-column="61" />
+            <state relative-caret-position="399">
+              <caret line="156" column="67" selection-start-line="156" selection-start-column="67" selection-end-line="156" selection-end-column="67" />
             </state>
           </provider>
         </entry>
@@ -36,6 +37,7 @@
       <find>орёл</find>
       <find>update.Message.From.ID</find>
       <find>наро</find>
+      <find>cities</find>
     </findStrings>
   </component>
   <component name="GOROOT" path="/snap/go/current" />
@@ -195,8 +197,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/bot/Bot.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="543">
-          <caret line="108" column="61" lean-forward="true" selection-start-line="108" selection-start-column="61" selection-end-line="108" selection-end-column="61" />
+        <state relative-caret-position="399">
+          <caret line="156" column="67" selection-start-line="156" selection-start-column="67" selection-end-line="156" selection-end-column="67" />
         </state>
       </provider>
     </entry>
