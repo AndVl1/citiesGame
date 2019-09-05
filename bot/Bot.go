@@ -24,7 +24,7 @@ var keyboard = tgbotapi.NewReplyKeyboard(
 type stringSlice []string
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI("945600369:AAHVNGwrXhbT1KIAa6y5LV5zrC1gAiXVgRs") // just test bot api
+	bot, err := tgbotapi.NewBotAPI("") // just test bot api
 	if err != nil {
 		log.Panic(err)
 	}
